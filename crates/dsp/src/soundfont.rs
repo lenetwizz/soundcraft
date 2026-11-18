@@ -234,7 +234,7 @@ impl SoundFont {
         if smpl.is_empty() {
             return Err("no sample data".into());
         }
-        let samples: Vec<i16> = smpl.chunks_exact(2).map(|p| i16::from_le_bytes([p[0], p[1]])).collect();
+        let samples: Vec<i16> = smpl.as_chunks::<2>().0.iter().copied().map(i16::from_le_bytes).collect();
         let headers: Vec<SampleHeader> = shdr
             .iter()
             .map(|r| SampleHeader {
@@ -288,12 +288,12 @@ impl SoundFont {
 
 /// The bag index each preset starts at (every `phdr` record, terminal included).
 fn preset_bag_starts(body: &[u8]) -> Vec<usize> {
-    body.chunks_exact(38).take(MAX_RECORDS + 1).map(|r| usize::from(u16_at(r, 24).unwrap_or(0))).collect()
+    body.as_chunks::<38>().0.iter().take(MAX_RECORDS + 1).map(|r| usize::from(u16_at(r, 24).unwrap_or(0))).collect()
 }
 
 /// The bag index each instrument starts at (every `inst` record, terminal included).
 fn inst_bag_starts(body: &[u8]) -> Vec<usize> {
-    body.chunks_exact(22).take(MAX_RECORDS + 1).map(|r| usize::from(u16_at(r, 20).unwrap_or(0))).collect()
+    body.as_chunks::<22>().0.iter().take(MAX_RECORDS + 1).map(|r| usize::from(u16_at(r, 20).unwrap_or(0))).collect()
 }
 
 /// The zones of bags `from..to`, their generators read from `gens`; `link` is the generator
